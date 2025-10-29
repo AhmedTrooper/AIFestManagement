@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import Fest, Item, ItemRule
-from .serializers import FestSerializer, FestCreateSerializer, FestDetailSerializer, ItemCreateSerializer, ItemSerializer, ItemRuleCreateSerializer, ItemRuleSerializer
+from .models import Fest, Item, ItemRule, Team, Submission
+from .serializers import FestSerializer, FestCreateSerializer, FestDetailSerializer, ItemCreateSerializer, ItemSerializer, ItemRuleCreateSerializer, ItemRuleSerializer, TeamSerializer, SubmissionSerializer
 from .permissions import IsAuthority
 
 try:
@@ -49,7 +49,7 @@ def fest_create(request):
 
 @api_view(["GET"])
 def fest_detail(request, fest_id: int):
-	fest = get_object_or_404(Fest.objects.prefetch_related("items__rules", "rules"), pk=fest_id, is_published=True)
+	fest = get_object_or_404(Fest.objects.prefetch_related("items__rules", "rules", "items__teams__submissions"), pk=fest_id, is_published=True)
 	data = FestDetailSerializer(fest).data
 	return Response(data)
 
@@ -82,6 +82,33 @@ def fest_rule_create(request, fest_id: int):
 		rule = ItemRule.objects.create(fest=fest, text=serializer.validated_data["text"]) 
 		return Response(ItemRuleSerializer(rule).data, status=status.HTTP_201_CREATED)
 	return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def item_teams(request, item_id: int):
+	item = get_object_or_404(Item, pk=item_id)
+	if request.method == "GET":
+		teams = item.teams.prefetch_related("submissions", "members").all()
+		return Response({"results": TeamSerializer(teams, many=True).data})
+	name = request.data.get("name", "").strip()
+	if not name:
+		return Response({"name": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
+	team = Team.objects.create(item=item, name=name)
+	team.members.add(request.user)
+	return Response(TeamSerializer(team).data, status=status.HTTP_201_CREATED)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def team_submission_create(request, team_id: int):
+	team = get_object_or_404(Team, pk=team_id)
+	if request.user not in team.members.all():
+		return Response({"detail": "Only team members can submit."}, status=status.HTTP_403_FORBIDDEN)
+	link = request.data.get("link", "")
+	notes = request.data.get("notes", "")
+	if not link:
+		return Response({"link": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
+	sub = Submission.objects.create(team=team, link=link, notes=notes)
+	return Response(SubmissionSerializer(sub).data, status=status.HTTP_201_CREATED)
 
 @api_view(["POST"])
 def fest_ask(request, fest_id: int):

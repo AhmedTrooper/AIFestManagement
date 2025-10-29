@@ -45,3 +45,21 @@ class ItemRule(models.Model):
 
 	def __str__(self):
 		return f"Rule for {self.item.title if self.item_id else self.fest.name}"
+
+class Team(models.Model):
+	item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="teams")
+	name = models.CharField(max_length=200)
+	members = models.ManyToManyField(User, related_name="teams", blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return f"{self.name} @ {self.item.title}"
+
+class Submission(models.Model):
+	team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="submissions")
+	link = models.URLField()
+	notes = models.TextField(blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return f"Submission by {self.team.name}"
