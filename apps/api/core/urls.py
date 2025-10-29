@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import echo, fest_list, fest_create, fest_detail, fest_ask, item_ask
+from .views import echo, fest_list, fest_create, fest_detail, fest_ask, item_ask, fest_item_create, item_rule_create, fest_rule_create
 
 urlpatterns = [
 	path("echo", echo, name="echo"),
@@ -8,4 +8,7 @@ urlpatterns = [
 	path("fests/<int:fest_id>", fest_detail, name="fest_detail"),
 	path("fests/<int:fest_id>/ask", fest_ask, name="fest_ask"),
 	path("items/<int:item_id>/ask", item_ask, name="item_ask"),
+	path("fests/<int:fest_id>/items", fest_item_create, name="fest_item_create"),
+	path("items/<int:item_id>/rules", item_rule_create, name="item_rule_create"),
+	path("fests/<int:fest_id>/rules", fest_rule_create, name="fest_rule_create"),
 ]

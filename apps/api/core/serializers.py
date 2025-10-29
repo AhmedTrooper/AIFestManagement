@@ -6,11 +6,21 @@ class ItemRuleSerializer(serializers.ModelSerializer):
 		model = ItemRule
 		fields = ["id", "text", "item"]
 
+class ItemRuleCreateSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = ItemRule
+		fields = ["text", "item"]
+
 class ItemSerializer(serializers.ModelSerializer):
 	rules = ItemRuleSerializer(many=True, read_only=True)
 	class Meta:
 		model = Item
 		fields = ["id", "title", "description", "max_team_size", "rules"]
+
+class ItemCreateSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Item
+		fields = ["title", "description", "max_team_size"]
 
 class FestSerializer(serializers.ModelSerializer):
 	class Meta:
