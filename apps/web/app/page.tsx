@@ -7,6 +7,14 @@ import { Button } from "../components/ui/button";
 import ThemeToggle from "../components/theme-toggle";
 import { apiFetch } from "../lib/api";
 
+interface FestDto {
+	id: number;
+	name: string;
+	description: string;
+	starts_at: string | null;
+	ends_at: string | null;
+}
+
 export default function HomePage() {
 	const message = useAppStore((s) => s.message);
 	const setMessage = useAppStore((s) => s.setMessage);
@@ -16,10 +24,20 @@ export default function HomePage() {
 	const [reply, setReply] = useState("");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
+	const [fests, setFests] = useState<FestDto[]>([]);
 
 	useEffect(() => {
 		setMessage("Welcome to AI Fest Management ✨");
+		loadFests();
 	}, [setMessage]);
+
+	async function loadFests() {
+		const res = await apiFetch("/api/fests");
+		if (res.ok) {
+			const data = await res.json();
+			setFests(data.results || []);
+		}
+	}
 
 	async function callApi() {
 		const res = await apiFetch("/api/echo", { method: "POST", body: JSON.stringify({ text: "Hello from Next.js" }) });
@@ -46,10 +64,25 @@ export default function HomePage() {
 				<ThemeToggle />
 			</div>
 			<p className="text-sm text-muted-foreground">Next.js + Zustand + Django + DRF + JWT</p>
+
+			<div className="space-y-2">
+				<h2 className="text-lg font-medium">Fests</h2>
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+					{fests.map((f) => (
+						<div key={f.id} className="border rounded p-3">
+							<div className="font-semibold">{f.name}</div>
+							<div className="text-sm text-muted-foreground line-clamp-3">{f.description}</div>
+						</div>
+					))}
+					{fests.length === 0 && <div className="text-sm text-muted-foreground">No fests yet</div>}
+				</div>
+			</div>
+
 			<div className="flex flex-col sm:flex-row gap-2 sm:items-center">
 				<Button className="w-full sm:w-auto" onClick={callApi}>Ping API</Button>
 				{reply && <span className="text-sm break-words">API: {reply}</span>}
 			</div>
+
 			<div className="space-y-3">
 				<div className="flex flex-col sm:flex-row gap-2">
 					<input className="border px-3 py-2 rounded w-full sm:w-48" placeholder="username" value={username} onChange={(e) => setUsername(e.target.value)} />
