@@ -1,6 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from .models import Fest
+from .serializers import FestSerializer
 
 try:
     from langchain.schema import HumanMessage
@@ -26,3 +28,9 @@ def echo(request):
             pass
 
     return Response({"reply": reply}, status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+def fest_list(request):
+    qs = Fest.objects.filter(is_published=True).order_by("-starts_at", "name")
+    data = FestSerializer(qs, many=True).data
+    return Response({"results": data}, status=status.HTTP_200_OK)
