@@ -19,12 +19,16 @@ export default function HomePage() {
 	const message = useAppStore((s) => s.message);
 	const setMessage = useAppStore((s) => s.setMessage);
 	const token = useAuthStore((s) => s.token);
+	const role = useAuthStore((s) => s.role);
 	const setToken = useAuthStore((s) => s.setToken);
+	const setProfile = useAuthStore((s) => s.setProfile);
 	const logout = useAuthStore((s) => s.logout);
 	const [reply, setReply] = useState("");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [fests, setFests] = useState<FestDto[]>([]);
+	const [newFestName, setNewFestName] = useState("");
+	const [newFestDesc, setNewFestDesc] = useState("");
 
 	useEffect(() => {
 		setMessage("Welcome to AI Fest Management ✨");
@@ -50,11 +54,22 @@ export default function HomePage() {
 		if (res.ok) {
 			const data = await res.json();
 			setToken(data.access);
+			const me = await apiFetch("/api/auth/me/");
+			if (me.ok) setProfile(await me.json());
 		}
 	}
 
 	async function doRegister() {
 		await apiFetch("/api/auth/register/", { method: "POST", body: JSON.stringify({ username, password }) });
+	}
+
+	async function createFest() {
+		const res = await apiFetch("/api/fests/create", { method: "POST", body: JSON.stringify({ name: newFestName, description: newFestDesc, is_published: true }) });
+		if (res.ok) {
+			setNewFestName("");
+			setNewFestDesc("");
+			loadFests();
+		}
 	}
 
 	return (
@@ -64,6 +79,15 @@ export default function HomePage() {
 				<ThemeToggle />
 			</div>
 			<p className="text-sm text-muted-foreground">Next.js + Zustand + Django + DRF + JWT</p>
+
+			{role === "authority" && (
+				<div className="space-y-2 border rounded p-3">
+					<div className="font-medium">Create Fest</div>
+					<input className="border px-3 py-2 rounded w-full" placeholder="name" value={newFestName} onChange={(e) => setNewFestName(e.target.value)} />
+					<textarea className="border px-3 py-2 rounded w-full" placeholder="description" value={newFestDesc} onChange={(e) => setNewFestDesc(e.target.value)} />
+					<Button onClick={createFest} disabled={!newFestName}>Create</Button>
+				</div>
+			)}
 
 			<div className="space-y-2">
 				<h2 className="text-lg font-medium">Fests</h2>

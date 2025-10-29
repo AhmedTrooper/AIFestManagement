@@ -1,8 +1,10 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import Fest
-from .serializers import FestSerializer
+from .serializers import FestSerializer, FestCreateSerializer
+from .permissions import IsAuthority
 
 try:
     from langchain.schema import HumanMessage
@@ -34,3 +36,12 @@ def fest_list(request):
     qs = Fest.objects.filter(is_published=True).order_by("-starts_at", "name")
     data = FestSerializer(qs, many=True).data
     return Response({"results": data}, status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsAuthority])
+def fest_create(request):
+    serializer = FestCreateSerializer(data=request.data, context={"request": request})
+    if serializer.is_valid():
+        fest = serializer.save()
+        return Response(FestSerializer(fest).data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
