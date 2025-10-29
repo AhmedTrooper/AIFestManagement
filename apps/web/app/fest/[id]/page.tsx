@@ -90,15 +90,10 @@ export default function FestDetailPage() {
 						<div className="font-medium">Items</div>
 						<div className="space-y-3">
 							{fest.items.map(it => (
-								<div key={it.id} className="border rounded p-3">
+								<Link key={it.id} href={`/item/${it.id}`} className="border rounded p-3 block">
 									<div className="font-semibold">{it.title}</div>
 									<p className="text-sm text-muted-foreground">{it.description}</p>
-									{it.rules.length > 0 && (
-										<ul className="list-disc pl-6 mt-2 space-y-1">
-											{it.rules.map(r => (<li key={r.id}>{r.text}</li>))}
-										</ul>
-									)}
-								</div>
+								</Link>
 							))}
 							{fest.items.length === 0 && <div className="text-sm text-muted-foreground">No items</div>}
 						</div>

@@ -1,5 +1,17 @@
 from rest_framework import serializers
-from .models import Fest, UserRole, Item, ItemRule
+from .models import Fest, UserRole, Item, ItemRule, Team, Submission
+
+class SubmissionSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Submission
+		fields = ["id", "link", "notes", "created_at"]
+
+class TeamSerializer(serializers.ModelSerializer):
+	submissions = SubmissionSerializer(many=True, read_only=True)
+	member_usernames = serializers.SlugRelatedField(many=True, read_only=True, slug_field="username", source="members")
+	class Meta:
+		model = Team
+		fields = ["id", "name", "member_usernames", "submissions", "created_at"]
 
 class ItemRuleSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -13,9 +25,10 @@ class ItemRuleCreateSerializer(serializers.ModelSerializer):
 
 class ItemSerializer(serializers.ModelSerializer):
 	rules = ItemRuleSerializer(many=True, read_only=True)
+	teams = TeamSerializer(many=True, read_only=True)
 	class Meta:
 		model = Item
-		fields = ["id", "title", "description", "max_team_size", "rules"]
+		fields = ["id", "title", "description", "max_team_size", "rules", "teams"]
 
 class ItemCreateSerializer(serializers.ModelSerializer):
 	class Meta:
