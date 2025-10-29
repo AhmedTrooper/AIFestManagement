@@ -4,8 +4,9 @@ services:
     build:
       context: ./apps/api
       dockerfile: Dockerfile
-    env_file:
-      - ./apps/api/.env
+    environment:
+      - DJANGO_SECRET_KEY=dev-secret-key
+      - DEBUG=1
     ports:
       - "8000:8000"
     command: ["bash", "-c", "python manage.py migrate && gunicorn api_project.wsgi:application --bind 0.0.0.0:8000"]
@@ -14,8 +15,8 @@ services:
     build:
       context: ./apps/web
       dockerfile: Dockerfile
-    env_file:
-      - ./apps/web/.env.local
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://api:8000
     ports:
       - "3000:3000"
     depends_on:
