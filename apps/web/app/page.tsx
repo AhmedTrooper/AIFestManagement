@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useAppStore } from "../store";
 import { useAuthStore } from "../store";
 import { Button } from "../components/ui/button";
@@ -93,10 +94,10 @@ export default function HomePage() {
 				<h2 className="text-lg font-medium">Fests</h2>
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 					{fests.map((f) => (
-						<div key={f.id} className="border rounded p-3">
+						<Link key={f.id} href={`/fest/${f.id}`} className="border rounded p-3 block">
 							<div className="font-semibold">{f.name}</div>
 							<div className="text-sm text-muted-foreground line-clamp-3">{f.description}</div>
-						</div>
+						</Link>
 					))}
 					{fests.length === 0 && <div className="text-sm text-muted-foreground">No fests yet</div>}
 				</div>
