@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: aifest-api
+    env: python
+    plan: free
+    rootDir: apps/api
+    buildCommand: pip install -r requirements.txt && python manage.py migrate
+    startCommand: gunicorn api_project.wsgi:application --bind 0.0.0.0:8000
+    autoDeploy: true
+  - type: web
+    name: aifest-web
+    env: node
+    plan: free
+    rootDir: apps/web
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE_URL
+        fromService:
+          type: web
+          name: aifest-api
+          property: url

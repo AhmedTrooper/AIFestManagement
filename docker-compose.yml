@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    env_file:
+      - ./apps/api/.env
+    ports:
+      - "8000:8000"
+    command: ["bash", "-c", "python manage.py migrate && gunicorn api_project.wsgi:application --bind 0.0.0.0:8000"]
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    env_file:
+      - ./apps/web/.env.local
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    command: ["bash", "-c", "npm run build && npm run start"]

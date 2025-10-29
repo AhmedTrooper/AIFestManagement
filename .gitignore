@@ -1,0 +1,18 @@
+# Node
+node_modules
+.next
+out
+
+# Python
+.venv
+__pycache__
+*.pyc
+
+# Env
+.env
+.env.*
+apps/web/.env.local
+apps/api/.env
+
+# Docker
+*.log

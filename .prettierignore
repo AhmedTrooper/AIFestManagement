@@ -1,0 +1,9 @@
+node_modules
+.next
+.build
+.dist
+.env
+.env.*
+**/staticfiles
+**/__pycache__
+**/*.pyc

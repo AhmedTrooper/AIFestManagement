@@ -1,0 +1,19 @@
+{
+  "root": true,
+  "env": {
+    "es2022": true,
+    "node": true,
+    "browser": true
+  },
+  "ignorePatterns": ["**/node_modules/**", "**/.next/**", "**/dist/**"],
+  "overrides": [
+    {
+      "files": ["apps/web/**/*.{ts,tsx}"],
+      "extends": ["next/core-web-vitals"],
+      "parserOptions": {
+        "project": "apps/web/tsconfig.json"
+      },
+      "rules": {}
+    }
+  ]
+}
