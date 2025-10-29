@@ -28,3 +28,20 @@ class Fest(models.Model):
 
 	def __str__(self):
 		return self.name
+
+class Item(models.Model):
+	fest = models.ForeignKey(Fest, on_delete=models.CASCADE, related_name="items")
+	title = models.CharField(max_length=200)
+	description = models.TextField(blank=True)
+	max_team_size = models.PositiveIntegerField(default=1)
+
+	def __str__(self):
+		return f"{self.title} @ {self.fest.name}"
+
+class ItemRule(models.Model):
+	fest = models.ForeignKey(Fest, on_delete=models.CASCADE, related_name="rules")
+	item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="rules", null=True, blank=True)
+	text = models.TextField()
+
+	def __str__(self):
+		return f"Rule for {self.item.title if self.item_id else self.fest.name}"
