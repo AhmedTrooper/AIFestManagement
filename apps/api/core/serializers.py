@@ -6,6 +6,15 @@ class FestSerializer(serializers.ModelSerializer):
 		model = Fest
 		fields = ["id", "name", "description", "starts_at", "ends_at", "is_published", "created_at", "updated_at"]
 
+class FestCreateSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Fest
+		fields = ["name", "description", "starts_at", "ends_at", "is_published"]
+
+	def create(self, validated_data):
+		user = self.context["request"].user
+		return Fest.objects.create(created_by=user, **validated_data)
+
 class UserRoleSerializer(serializers.ModelSerializer):
 	username = serializers.CharField(source="user.username", read_only=True)
 	class Meta:
