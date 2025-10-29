@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "../../../lib/api";
 import { Button } from "../../../components/ui/button";
+import { useAuthStore } from "../../../store";
 
 interface RuleDto { id: number; text: string; item: number | null }
 interface ItemDto { id: number; title: string; description: string; max_team_size: number; rules: RuleDto[] }
@@ -11,9 +12,13 @@ interface FestDetailDto { id: number; name: string; description: string; items: 
 
 export default function FestDetailPage() {
 	const params = useParams<{ id: string }>();
+	const role = useAuthStore((s) => s.role);
 	const [fest, setFest] = useState<FestDetailDto | null>(null);
 	const [question, setQuestion] = useState("");
 	const [answer, setAnswer] = useState("");
+	const [itemTitle, setItemTitle] = useState("");
+	const [itemDesc, setItemDesc] = useState("");
+	const [ruleText, setRuleText] = useState("");
 
 	useEffect(() => {
 		load();
@@ -33,6 +38,23 @@ export default function FestDetailPage() {
 		}
 	}
 
+	async function createItem() {
+		const res = await apiFetch(`/api/fests/${params.id}/items`, { method: "POST", body: JSON.stringify({ title: itemTitle, description: itemDesc, max_team_size: 1 }) });
+		if (res.ok) {
+			setItemTitle("");
+			setItemDesc("");
+			load();
+		}
+	}
+
+	async function addFestRule() {
+		const res = await apiFetch(`/api/fests/${params.id}/rules`, { method: "POST", body: JSON.stringify({ text: ruleText }) });
+		if (res.ok) {
+			setRuleText("");
+			load();
+		}
+	}
+
 	return (
 		<div className="px-4 py-6 max-w-3xl mx-auto space-y-5">
 			<Link href="/" className="text-sm underline">Back</Link>
@@ -42,6 +64,21 @@ export default function FestDetailPage() {
 						<h1 className="text-2xl font-semibold">{fest.name}</h1>
 						<p className="text-sm text-muted-foreground whitespace-pre-wrap">{fest.description}</p>
 					</div>
+					{role === "authority" && (
+						<div className="grid gap-3 sm:grid-cols-2">
+							<div className="space-y-2 border rounded p-3">
+								<div className="font-medium">Add Item</div>
+								<input className="border px-3 py-2 rounded w-full" placeholder="title" value={itemTitle} onChange={(e) => setItemTitle(e.target.value)} />
+								<textarea className="border px-3 py-2 rounded w-full" placeholder="description" value={itemDesc} onChange={(e) => setItemDesc(e.target.value)} />
+								<Button onClick={createItem} disabled={!itemTitle}>Create</Button>
+							</div>
+							<div className="space-y-2 border rounded p-3">
+								<div className="font-medium">Add Fest Rule</div>
+								<textarea className="border px-3 py-2 rounded w-full" placeholder="Rule text" value={ruleText} onChange={(e) => setRuleText(e.target.value)} />
+								<Button onClick={addFestRule} disabled={!ruleText}>Add</Button>
+							</div>
+						</div>
+					)}
 					<div className="space-y-2">
 						<div className="font-medium">Rules</div>
 						<ul className="list-disc pl-6 space-y-1">
